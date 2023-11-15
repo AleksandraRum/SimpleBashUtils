@@ -4,11 +4,13 @@
 
 
 
-    vbmn,   
+    vbmn,t
 
 
-ghkjghjhk   hj,
+^ghkjghjhk   hj,
 1.bhl
 2.njl
 txt.txt
 -c 
+ni n
+i
