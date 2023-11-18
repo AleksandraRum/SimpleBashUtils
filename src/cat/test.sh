@@ -19,7 +19,7 @@ declare -a tests1=(
 get_test()
 {
     templ=$(echo $@ | sed "s/VAR/$var/")
-    ./cat $templ >> test_s21_cat.log
+    ./s21_cat $templ >> test_s21_cat.log
     cat $templ >> test_cat.log
     DIFF_RES="$(diff -s test_s21_cat.log test_cat.log)"
         (( COUNTER++ ))
