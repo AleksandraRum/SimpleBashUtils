@@ -22,6 +22,7 @@ declare -a tests1=(
     "VARf -n test_copy.txt test.txt"
     "VARen ghj test.txt"
     "VARnf test_copy.txt test.txt"
+    "VARfn test_copy.txt test.txt"
 
 )
 
