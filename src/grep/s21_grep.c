@@ -9,8 +9,8 @@ void add_letters(char *flags, char flag);
 void parser(int argc, char *argv[], char *flags, char *template, int *end_flags);
 void change_file(char *flags, FILE *fp, regex_t reg, char *name, int *file_count, char *template);
 void e_action(int *e_count, int *i, int *end_flags, char *template, char *argv[]);
-void f_action(int *i, int *end_flags, char *template, char *argv[]);
-//void mult_e_action(int *e_count, int *i, int *j, int *end_flags, char *template, char *argv[]);
+void f_action(int *i, int *end_flags, char *template, char *patt);
+void mult_e_action(int *e_count, int *i, int *j, int *end_flags, char *template, char *argv[]);
 
 
 int main(int argc, char *argv[])
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
        if (argc > 3)  {
       
             parser(argc, argv, flags, template, &end_flags);
-            //printf("%s %s %d\n", flags, template, end_flags);
+            printf("%s %s %d \n", flags, template, end_flags);
             for (int i = (end_flags + 1);i < argc; i++ ) {
                 file_count = argc - end_flags - 1;
                 open_file(template, argv[i], flags, &file_count);
@@ -62,48 +62,66 @@ void parser(int argc, char *argv[], char *flags, char *template, int *end_flags)
         if ((argv[i][0] == '-') && (argv[i][1] == 'f') && (strlen(argv[i]) == 2)) 
         {
             add_letters(flags, argv[i][1]);
-            f_action( &i, end_flags, template, argv);
+            char patt[LEN] = "";
+            sprintf(patt, "%s", argv[i+1]);
+            //printf("%s\n", patt);
+            f_action(&i, end_flags, template, patt);
         }
         if (argv[1][0] != '-')
         {
             sprintf(template, "%s", argv[1]);
-            *end_flags =  1;
+            *end_flags = 1;
             break;
         }
         if ((argv[i][0] == '-') && (strlen(argv[i]) > 2))
         {
             for (int j = 1; j < (int)strlen(argv[i]); j++) {
-                /*if ((argv[i][j] != 'e') && (argv[i][j] != 'f')) add_letters(flags, argv[i][j]);
-                if (argv[i][j] == 'e')
+                if ((argv[i][j] == 'e') && (((int)strlen(argv[i]) - 1) > j))
                 {
                     add_letters(flags, argv[i][j]);
                     e_count += 1;
                     mult_e_action(&e_count, &i, &j,end_flags, template, argv);
+                    break;
                 }
-            }*/
-            add_letters(flags, argv[i][j]);
-            }
-            if ((strchr(flags, 'e') != NULL) && (argv[i+1][0] != '-'))
+                if ((argv[i][j] != 'e') && (argv[i][j] != 'f')) add_letters(flags, argv[i][j]);
+                if ((argv[i][j] == 'e') && (((int)strlen(argv[i]) - 1) == j)) 
+                {
+                    add_letters(flags, argv[i][j]);
+                    e_count += 1;
+                    e_action(&e_count, &i, end_flags, template, argv);
+                }
+                if ((argv[i][j] == 'f') && (((int)strlen(argv[i]) - 1) == j)) 
+                {
+                    add_letters(flags, argv[i][j]);
+                    char patt[LEN] = "";
+                    sprintf(patt, "%c", argv[i][j+1]);
+                    f_action(&i, end_flags, template, patt);
+                }
+            }           
+            /*if ((strchr(flags, 'e') != NULL) && (argv[i+1][0] != '-'))
             { 
                 e_count += 1;
                 e_action(&e_count, &i, end_flags, template, argv);
-            }
+            }*/
             if ((strchr(flags, 'e') == NULL)  && (strchr(flags, 'f') == NULL))
             {
                 sprintf(template, "%s", argv[i+1]);
                 *end_flags = i + 1;
             }
-            if ((strchr(flags, 'f') != NULL) && (argv[i+1][0] != '-'))
+            /*if ((strchr(flags, 'f') != NULL) && (argv[i+1][0] != '-'))
             {
-                f_action( &i, end_flags, template, argv);
-            }
+                char patt[LEN] = "";
+                sprintf(patt, "%s", argv[i+1]);
+                f_action( &i, end_flags, template, patt);
+            }*/
         }
     }
+    //printf("%d\n", e_count);
 }
-void f_action(int *i, int *end_flags, char *template, char *argv[])
+void f_action(int *i, int *end_flags, char *template, char *patt)
 {
     char text[LEN] = "";
-    FILE *fp = fopen(argv[*i + 1], "r");
+    FILE *fp = fopen(patt, "r");
     if (fp != NULL)
     {
         fgets(text, LEN, fp);
@@ -118,8 +136,8 @@ void f_action(int *i, int *end_flags, char *template, char *argv[])
         }
     *end_flags = *i + 1;    
     }
-    else fprintf(stderr, "grep: %s: No such file or directory\n", argv[*i + 1]);
-
+    else fprintf(stderr, "grep: %s: No such file or directory\n", patt);
+    fclose(fp); 
 }
 
 void e_action(int *e_count, int *i, int *end_flags, char *template, char *argv[])
@@ -136,27 +154,31 @@ void e_action(int *e_count, int *i, int *end_flags, char *template, char *argv[]
         *end_flags = *i + 1;
     }
 }
-/*void mult_e_action(int *e_count, int *i, int *j, int *end_flags, char *template, char *argv[])
+
+void mult_e_action(int *e_count, int *i, int *j, int *end_flags, char *template, char *argv[])
 {
     if (*e_count == 1) 
     {
-        //for (int m = *j + 1; m < (int)strlen(argv[*i]); *j = *j + 1)
-        //{
-            strcat(template, argv[*i][*(j + 1)]);
-        ///}
-        
-        *end_flags = *i + 1;
+        for (int m = *j + 1; m < (int)strlen(argv[*i]); m++)
+        {
+            char buff[3] = "";
+            buff[0] = argv[*i][m];
+            strcat(template, buff);
+        }
+        *end_flags = *i;
     }
     else 
     {
         strcat(template, "|");
-        //for (int m = *j + 1; m < (int)strlen(argv[*i]); *j = *j + 1)
-        //{
-            strcat(template, argv[*i][*(j + 1)]);
-        //}
-        *end_flags = *i + 1;
+        for (int m = *j + 1; m < (int)strlen(argv[*i]); *j = *j + 1)
+        {
+            char buff[3] = "";
+            buff[0] = argv[*i][m];
+            strcat(template, buff);
+        }
+        *end_flags = *i;
     }
-}*/
+}
 
 
 void add_letters(char *flags, char flag)
@@ -213,6 +235,7 @@ void change_file(char *flags, FILE *fp, regex_t reg, char *name, int *file_count
                 else  printf("%s\n",template);
             }
         }
+            
         if ((*file_count == 1) && (flag == 1) && (strchr(flags, 'n') != NULL) && (strchr(flags, 'c') == NULL)  && (strchr(flags, 'l') == NULL)) printf("%d:", cur_line);
         if ((flag == 1) && (strchr(flags, 'c') == NULL)  && (strchr(flags, 'l') == NULL) && (*file_count == 1)) 
         {

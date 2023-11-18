@@ -20,6 +20,9 @@ declare -a tests1=(
     ""^t" test.txt"
     "VARiv ghj test.txt"
     "VARf -n test_copy.txt test.txt"
+    "VARen ghj test.txt"
+    "VARnf test_copy.txt test.txt"
+
 )
 
 get_test()
