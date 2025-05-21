@@ -43,7 +43,7 @@ do
     done
 done
 
-for var1 in b e n s t v
+for var1 in n s t v
 do
     for var2 in b e n s t v
     do
@@ -57,19 +57,3 @@ do
         fi
     done
 done
-
-for i in "${tests1[@]}"
-do
-    var="-"
-    get_test $i
-done
-
-#for var1 in b n s t v e
-#do
-    #for i in "${tests1[@]}"
-    #do
-        #var="-$var1"
-        #get_test $i
-    #done
-#done
-
